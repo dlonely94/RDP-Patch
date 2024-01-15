@@ -23,6 +23,7 @@
         private string termService = "TermService";
         private string sessionEnv = "SessionEnv";
         private string umrdpService = "UmRdpService";
+        private string filePath = "";
 
         #region Windows Form Designer generated code
 

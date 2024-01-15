@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ServiceProcess;
+using System.IO;
+using System.Security.AccessControl;
 
 namespace RDP_Patch
 {
@@ -29,6 +31,36 @@ namespace RDP_Patch
             }
             return sc.Status;
         }
+
+        public void getFilePermission(string filePath)
+        {
+            try
+            {
+                FileSecurity fileSec = File.GetAccessControl(filePath);
+                AuthorizationRuleCollection rules = fileSec.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount));
+                foreach (AuthorizationRule rule in rules)
+                {
+                    FileSystemAccessRule fsRule = rule as FileSystemAccessRule;
+                    if (fsRule != null)
+                    {
+                        Console.WriteLine($"Identity: {fsRule.IdentityReference}");
+                        Console.WriteLine($"Rights: {fsRule.FileSystemRights}");
+                        Console.WriteLine($"Access Control Type: {fsRule.AccessControlType}");
+                        Console.WriteLine($"Inheritance Flags: {fsRule.InheritanceFlags}");
+                        Console.WriteLine($"Propagation Flags: {fsRule.PropagationFlags}");
+                        Console.WriteLine();
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine(ex);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
         public Form1()
         {
             InitializeComponent();
@@ -44,7 +76,9 @@ namespace RDP_Patch
             textBox1.AppendText("Session Env - " + sessionStatus.ToString());
             textBox1.AppendText(Environment.NewLine);
             textBox1.AppendText("UmRdp Service - " + umrdpStatus.ToString());
-
+            filePath = Environment.SystemDirectory + $@"\termsrv.dll";
+            textBox2.AppendText(filePath);
+            getFilePermission(filePath);
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
